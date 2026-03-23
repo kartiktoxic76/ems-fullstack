@@ -204,14 +204,7 @@ select{-webkit-appearance:none;}
     <div class="a-logo"><div class="a-ic">🏢</div><div class="a-nm">EM<span>S</span></div></div>
     <div class="a-h">Welcome Back</div>
     <div class="a-s">Sign in to Employee Management System</div>
-    <div class="hints">
-      <div class="ht">👆 Tap to auto-fill</div>
-      <div class="hi" onclick="fill('emp001@ems.com','Emp@2026')"><div class="hdot" style="background:#3b82f6"></div><div class="hinfo"><strong>Employee</strong> — emp001 / Emp@2026</div></div>
-      <div class="hi" onclick="fill('mgr001@ems.com','Mgr@2026')"><div class="hdot" style="background:#8b5cf6"></div><div class="hinfo"><strong>Manager</strong> — mgr001 / Mgr@2026</div></div>
-      <div class="hi" onclick="fill('hr001@ems.com','Hr@2026')"><div class="hdot" style="background:#ec4899"></div><div class="hinfo"><strong>HR Manager</strong> — hr001 / Hr@2026</div></div>
-      <div class="hi" onclick="fill('admin001@ems.com','Admin@2026')"><div class="hdot" style="background:#f59e0b"></div><div class="hinfo"><strong>Admin</strong> — admin001 / Admin@2026</div></div>
-      <div class="hi" onclick="fill('ceo001@ems.com','Ceo@2026')"><div class="hdot" style="background:#10b981"></div><div class="hinfo"><strong>CEO</strong> — ceo001 / Ceo@2026</div></div>
-    </div>
+
     <div class="fg"><label class="fl">Email</label><input class="fi" id="l-em" type="email" placeholder="you@ems.com" autocomplete="username"/></div>
     <div class="fg"><label class="fl">Password</label><div class="pw-w"><input class="fi" id="l-pw" type="password" placeholder="Password" autocomplete="current-password"/><span class="pw-e" onclick="tpw('l-pw',this)"><i class="fas fa-eye"></i></span></div></div>
     <div class="ferr" id="l-err">❌ Invalid email or password.</div>
@@ -271,7 +264,7 @@ select{-webkit-appearance:none;}
 //  Token stored in localStorage; all data from server
 // ═══════════════════════════════════════════════════════════════
 
-const API_BASE = 'https://ems-backend-gg7a.onrender.com/api'; // ← Change to your deployed backend URL
+const API_BASE = 'http://localhost:5000/api'; // ← Change to your deployed backend URL
 
 // ── API HELPER ────────────────────────────────────────────────
 let authToken = localStorage.getItem('ems_token') || null;
@@ -306,15 +299,15 @@ let U = null;
 
 const NAV = {
   employee:[{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-user',t:'Profile',p:'profile'},{i:'fa-fingerprint',t:'Attendance',p:'attend'},{i:'fa-calendar-xmark',t:'Leaves',p:'leave'},{i:'fa-coins',t:'Payslips',p:'payslip'},{i:'fa-chart-line',t:'Performance',p:'perf'},{i:'fa-gear',t:'Settings',p:'settings'}],
-  manager: [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-users',t:'My Team',p:'emps'},{i:'fa-calendar-check',t:'Approvals',p:'appr'},{i:'fa-fingerprint',t:'Attendance',p:'attend'},{i:'fa-chart-line',t:'Performance',p:'perf'},{i:'fa-chart-pie',t:'Reports',p:'rpts'},{i:'fa-gear',t:'Settings',p:'settings'}],
-  hr:      [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-user-plus',t:'Onboarding',p:'onboard'},{i:'fa-users',t:'Employees',p:'emps'},{i:'fa-coins',t:'Payroll',p:'payroll'},{i:'fa-chart-bar',t:'Reports',p:'rpts'},{i:'fa-gear',t:'Settings',p:'settings'}],
+  manager: [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-users',t:'My Team',p:'emps'},{i:'fa-calendar-check',t:'Approvals',p:'appr'},{i:'fa-fingerprint',t:'Attendance',p:'attend'},{i:'fa-coins',t:'Payslips',p:'payslip'},{i:'fa-chart-line',t:'Performance',p:'perf'},{i:'fa-chart-pie',t:'Reports',p:'rpts'},{i:'fa-gear',t:'Settings',p:'settings'}],
+  hr:      [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-user-plus',t:'Onboarding',p:'onboard'},{i:'fa-users',t:'Employees',p:'emps'},{i:'fa-coins',t:'Payroll',p:'payroll'},{i:'fa-file-invoice',t:'Payslips',p:'payslip'},{i:'fa-chart-bar',t:'Reports',p:'rpts'},{i:'fa-gear',t:'Settings',p:'settings'}],
   admin:   [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-users-gear',t:'Users & Roles',p:'users'},{i:'fa-sliders',t:'Settings',p:'settings'},{i:'fa-scroll',t:'Audit Logs',p:'audit'},{i:'fa-shield-halved',t:'Security',p:'gen'}],
   ceo:     [{i:'fa-chart-pie',t:'Overview',p:'dash'},{i:'fa-users',t:'Headcount',p:'rpts'},{i:'fa-coins',t:'Payroll Cost',p:'payroll'},{i:'fa-star',t:'Performance',p:'perf'},{i:'fa-file-pdf',t:'Board Report',p:'board'}]
 };
 const BN = {
   employee:['dash','attend','leave','payslip','settings'],
-  manager: ['dash','emps','appr','perf','settings'],
-  hr:      ['dash','emps','payroll','onboard','settings'],
+  manager: ['dash','emps','appr','payslip','settings'],
+  hr:      ['dash','emps','payroll','payslip','settings'],
   admin:   ['dash','users','audit','settings'],
   ceo:     ['dash','rpts','payroll','perf','board']
 };
@@ -690,26 +683,149 @@ async function cancelLeave(id) {
 
 // ── PAYSLIPS ──────────────────────────────────────────────────
 async function pPayslip(u) {
-  const data = await api('GET', '/payroll/my');
-  const records = data.records||[];
-  if (!records.length) return `<div class="pt">Payslips</div><div class="ps">Your salary history</div><div class="card"><div class="cb" style="text-align:center;padding:40px"><div style="font-size:36px">📄</div><div style="margin-top:8px;font-size:12px;color:var(--mu)">No payslips yet</div></div></div>`;
-  const latest = records[0];
-  const rows   = records.map(p=>`<tr><td>${p.monthLabel}</td><td>₹${fmt(p.netPay)}</td><td>₹${fmt(p.gross)}</td><td>₹${fmt(p.totalDeductions)}</td><td><span class="bdg bgn">Paid</span></td></tr>`).join('');
-  return `<div class="pt">Payslips</div><div class="ps">Your salary history</div>
-  <div class="card"><div class="ch"><h3>${latest.monthLabel} — Latest</h3></div><div class="cb">
-    <div class="g3">
-      ${sc(1,'fa-coins','\u20B9'+fmt(latest.netPay),'Net Pay','Take home',u.c,u.l,u.b)}
-      ${sc(2,'fa-chart-bar','\u20B9'+fmt(latest.gross),'Gross','Before deductions','#8b5cf6','#c4b5fd','rgba(139,92,246,.15)')}
-      ${sc(3,'fa-minus-circle','\u20B9'+fmt(latest.totalDeductions),'Deductions','TDS + PF + PT','#f87171','#fca5a5','rgba(239,68,68,.15)')}
+  const endpoint = ['hr','admin','ceo'].includes(u.role) ? '/payroll/all' : '/payroll/my';
+  const data = await api('GET', endpoint);
+  const allRecords = data.records||[];
+  if (!allRecords.length) return `<div class="pt">Payslips</div><div class="ps">Salary history</div><div class="card"><div class="cb" style="text-align:center;padding:40px"><div style="font-size:36px">📄</div><div style="margin-top:8px;font-size:12px;color:var(--mu)">No payslips yet. Ask HR to run payroll.</div></div></div>`;
+
+  const years  = [...new Set(allRecords.map(p=>p.month?.slice(0,4)))].sort().reverse();
+  const months = [...new Set(allRecords.map(p=>p.month?.slice(5,7)))].sort();
+
+  const rows = allRecords.map(p=>{
+    const emp = p.userId?.name ? `<div style="font-size:10px;color:var(--mu)">${p.userId.name}</div>` : '';
+    return `<tr>
+      <td>${emp}<div>${p.monthLabel||p.month}</div></td>
+      <td>₹${fmt(p.netPay)}</td>
+      <td>₹${fmt(p.gross)}</td>
+      <td>₹${fmt(p.totalDeductions)}</td>
+      <td><span class="bdg bgn">Paid</span></td>
+      <td><button class="btn btn-o btn-sm" onclick='downloadPayslip(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+        <i class="fas fa-download"></i> PDF
+      </button></td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="pt">Payslips</div><div class="ps">Download salary slips by year &amp; month</div>
+  <div class="card"><div class="ch" style="flex-wrap:wrap;gap:8px">
+    <h3>Filter Payslips</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select class="inp" id="ps-year" style="width:110px" onchange="filterPayslips()">
+        <option value="">All Years</option>
+        ${years.map(y=>`<option value="${y}">${y}</option>`).join('')}
+      </select>
+      <select class="inp" id="ps-month" style="width:130px" onchange="filterPayslips()">
+        <option value="">All Months</option>
+        <option value="01">January</option><option value="02">February</option>
+        <option value="03">March</option><option value="04">April</option>
+        <option value="05">May</option><option value="06">June</option>
+        <option value="07">July</option><option value="08">August</option>
+        <option value="09">September</option><option value="10">October</option>
+        <option value="11">November</option><option value="12">December</option>
+      </select>
+      <button class="btn btn-o btn-sm" onclick="filterPayslips()"><i class="fas fa-filter"></i> Filter</button>
     </div>
-    <div class="g2" style="margin-top:12px">
-      <div>${pr('Basic','\u20B9'+fmt(latest.basic),'var(--tx)')}${pr('HRA','\u20B9'+fmt(latest.hra),'var(--tx)')}${pr('Transport','\u20B9'+fmt(latest.transport),'var(--tx)')}${pr('Bonus','\u20B9'+fmt(latest.bonus||0),'#4ade80')}</div>
-      <div>${pr('TDS','-\u20B9'+fmt(latest.tds),'#f87171')}${pr('PF','-\u20B9'+fmt(latest.pf),'#f87171')}${pr('Prof. Tax','-\u20B9'+fmt(latest.profTax),'#f87171')}</div>
-    </div>
-  </div></div>
-  <div class="card"><div class="ch"><h3>All Payslips</h3></div>
-    <div class="tw"><table class="tbl"><thead><tr><th>Month</th><th>Net Pay</th><th>Gross</th><th>Deductions</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
-  </div>`;
+  </div>
+  <div class="tw"><table class="tbl" id="ps-table">
+    <thead><tr><th>Month</th><th>Net Pay</th><th>Gross</th><th>Deductions</th><th>Status</th><th>Download</th></tr></thead>
+    <tbody id="ps-body">${rows}</tbody>
+  </table></div></div>`;
+}
+
+window._allPayslips = [];
+async function filterPayslips() {
+  const year  = document.getElementById('ps-year')?.value;
+  const month = document.getElementById('ps-month')?.value;
+  const u = U;
+  const endpoint = ['hr','admin','ceo'].includes(u.role) ? '/payroll/all' : '/payroll/my';
+  const data = await api('GET', endpoint + (year||month ? '?month='+(year||'')+(month?'-'+month:'') : ''));
+  const records = (data.records||[]).filter(p => {
+    if (year  && !p.month?.startsWith(year))  return false;
+    if (month && !p.month?.endsWith('-'+month)) return false;
+    return true;
+  });
+  const rows = records.map(p=>{
+    const emp = p.userId?.name ? `<div style="font-size:10px;color:var(--mu)">${p.userId.name}</div>` : '';
+    return `<tr>
+      <td>${emp}<div>${p.monthLabel||p.month}</div></td>
+      <td>₹${fmt(p.netPay)}</td><td>₹${fmt(p.gross)}</td>
+      <td>₹${fmt(p.totalDeductions)}</td>
+      <td><span class="bdg bgn">Paid</span></td>
+      <td><button class="btn btn-o btn-sm" onclick='downloadPayslip(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+        <i class="fas fa-download"></i> PDF
+      </button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--mu);padding:20px">No payslips found for selected period</td></tr>';
+  document.getElementById('ps-body').innerHTML = rows;
+}
+
+function downloadPayslip(p) {
+  const empName = p.userId?.name || U.name || 'Employee';
+  const empEid  = p.userId?.eid  || U.eid  || '—';
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/>
+<style>
+  body{font-family:Arial,sans-serif;color:#1a1a1a;margin:0;padding:0;background:#fff;}
+  .page{max-width:700px;margin:0 auto;padding:40px;}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1d4ed8;padding-bottom:20px;margin-bottom:28px;}
+  .company{font-size:22px;font-weight:900;color:#1d4ed8;letter-spacing:-.03em;}
+  .title{font-size:13px;color:#555;margin-top:4px;}
+  .badge{background:#1d4ed8;color:#fff;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:700;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px;}
+  .field{background:#f8f9ff;border-radius:6px;padding:10px 14px;}
+  .flabel{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+  .fval{font-size:13px;font-weight:600;}
+  .section{margin-bottom:20px;}
+  .sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#1d4ed8;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e7ff;}
+  table{width:100%;border-collapse:collapse;}
+  td{padding:8px 12px;font-size:13px;border-bottom:1px solid #f0f0f0;}
+  td:last-child{text-align:right;font-weight:600;}
+  .total-row td{font-size:14px;font-weight:700;border-top:2px solid #1d4ed8;border-bottom:none;color:#1d4ed8;}
+  .net{background:#1d4ed8;color:#fff;border-radius:10px;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;margin-top:20px;}
+  .net-label{font-size:12px;opacity:.8;}
+  .net-amount{font-size:26px;font-weight:900;}
+  .footer{margin-top:32px;text-align:center;font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:16px;}
+</style></head><body>
+<div class="page">
+  <div class="header">
+    <div><div class="company">EMS</div><div class="title">Employee Management System — Pay Slip</div></div>
+    <div class="badge">${p.monthLabel||p.month}</div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="flabel">Employee Name</div><div class="fval">${empName}</div></div>
+    <div class="field"><div class="flabel">Employee ID</div><div class="fval">${empEid}</div></div>
+    <div class="field"><div class="flabel">Pay Period</div><div class="fval">${p.monthLabel||p.month}</div></div>
+    <div class="field"><div class="flabel">Status</div><div class="fval" style="color:#16a34a">Paid</div></div>
+  </div>
+  <div class="section">
+    <div class="sec-title">Earnings</div>
+    <table>
+      <tr><td>Basic Salary</td><td>₹${fmt(p.basic)}</td></tr>
+      <tr><td>HRA (House Rent Allowance)</td><td>₹${fmt(p.hra)}</td></tr>
+      <tr><td>Transport Allowance</td><td>₹${fmt(p.transport)}</td></tr>
+      <tr><td>Bonus</td><td>₹${fmt(p.bonus||0)}</td></tr>
+      <tr class="total-row"><td>Gross Earnings</td><td>₹${fmt(p.gross)}</td></tr>
+    </table>
+  </div>
+  <div class="section">
+    <div class="sec-title">Deductions</div>
+    <table>
+      <tr><td>TDS (Tax Deducted at Source)</td><td>- ₹${fmt(p.tds)}</td></tr>
+      <tr><td>PF (Provident Fund)</td><td>- ₹${fmt(p.pf)}</td></tr>
+      <tr><td>Professional Tax</td><td>- ₹${fmt(p.profTax)}</td></tr>
+      <tr class="total-row"><td>Total Deductions</td><td>- ₹${fmt(p.totalDeductions)}</td></tr>
+    </table>
+  </div>
+  <div class="net">
+    <div><div class="net-label">Net Pay (Take Home)</div><div style="font-size:12px;opacity:.7;margin-top:2px">${p.monthLabel||p.month}</div></div>
+    <div class="net-amount">₹${fmt(p.netPay)}</div>
+  </div>
+  <div class="footer">This is a computer-generated payslip. No signature required.<br/>Generated on ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
+</div></body></html>`;
+
+  const w = window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>{ w.focus(); w.print(); }, 600);
 }
 
 // ── PERFORMANCE ───────────────────────────────────────────────
@@ -763,16 +879,59 @@ async function runPayroll() {
 async function pEmps(u) {
   const data = await api('GET', '/users');
   const users = data.users||[];
+  const isHR = ['hr','admin'].includes(u.role);
   const rows = users.map(e=>`<tr>
     <td><div style="display:flex;align-items:center;gap:8px">${avatarHtml(e,28)}<div><div style="font-size:12px;font-weight:600">${e.name}</div><div style="font-size:10px;color:var(--mu)">${e.eid||''}</div></div></div></td>
     <td>${e.dept||'—'}</td><td>${e.title||'—'}</td>
+    <td>₹${fmt(e.salary||0)}</td>
     <td><span class="bdg bgn">Active</span></td>
     <td><span class="bdg ${e.role==='manager'?'bgp':e.role==='hr'?'bgpk':'bgb'}">${RL[e.role]||e.role}</span></td>
+    ${isHR ? `<td style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="btn btn-o btn-sm" onclick="changeSalaryModal('${e._id}','${e.name}',${e.salary||0})"><i class="fas fa-rupee-sign"></i> Salary</button>
+      <button class="btn btn-r btn-sm" onclick="fireEmployee('${e._id}','${e.name}')"><i class="fas fa-user-slash"></i> Fire</button>
+    </td>` : '<td></td>'}
   </tr>`).join('');
   return `<div class="pt">Employees</div><div class="ps">${users.length} active employees</div>
-  <div class="card"><div class="ch"><h3>All Employees</h3></div>
-    <div class="tw"><table class="tbl"><thead><tr><th>Name</th><th>Dept</th><th>Title</th><th>Status</th><th>Role</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div id="salary-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center">
+    <div style="background:var(--bg2);border:1px solid var(--br2);border-radius:16px;padding:28px;width:320px;max-width:90vw">
+      <div style="font-size:15px;font-weight:700;margin-bottom:16px">Change Salary</div>
+      <div id="salary-modal-name" style="font-size:12px;color:var(--mu);margin-bottom:12px"></div>
+      <div class="ig"><div class="ilbl">New Monthly Salary (₹)</div><input class="inp" id="salary-input" type="number" placeholder="e.g. 75000"/></div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn btn-p" style="flex:1" onclick="saveSalary()"><i class="fas fa-save"></i> Save</button>
+        <button class="btn btn-o" onclick="document.getElementById('salary-modal').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>All Employees</h3>${isHR?'<span style="font-size:11px;color:var(--mu)">HR: you can change salary or fire employees</span>':''}</div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Name</th><th>Dept</th><th>Title</th><th>Salary</th><th>Status</th><th>Role</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
   </div>`;
+}
+
+let _salaryUserId = null;
+function changeSalaryModal(id, name, currentSalary) {
+  _salaryUserId = id;
+  document.getElementById('salary-modal-name').textContent = name + ' — current: ₹' + fmt(currentSalary);
+  document.getElementById('salary-input').value = currentSalary;
+  document.getElementById('salary-modal').style.display = 'flex';
+}
+async function saveSalary() {
+  const salary = Number(document.getElementById('salary-input').value);
+  if (!salary || salary < 1000) return toast('⚠️ Enter a valid salary (min ₹1000).');
+  try {
+    await api('PUT', '/users/'+_salaryUserId, { salary });
+    document.getElementById('salary-modal').style.display = 'none';
+    toast('✅ Salary updated successfully!');
+    go('emps');
+  } catch(e) { toast('❌ '+e.message); }
+}
+async function fireEmployee(id, name) {
+  if (!confirm('⚠️ Are you sure you want to FIRE ' + name + '?\n\nThis will deactivate their account permanently.')) return;
+  try {
+    await api('DELETE', '/users/'+id);
+    toast('✅ ' + name + ' has been removed from the system.');
+    go('emps');
+  } catch(e) { toast('❌ '+e.message); }
 }
 
 // ── APPROVALS ─────────────────────────────────────────────────
@@ -888,6 +1047,7 @@ async function deactivateUser(id, name) {
   if (!confirm('Deactivate '+name+'?')) return;
   try { await api('DELETE', '/users/'+id); toast('✅ User deactivated.'); go('users'); } catch(e) { toast('❌ '+e.message); }
 }
+
 
 // ── ONBOARDING ────────────────────────────────────────────────
 async function pOnboard(u) {
