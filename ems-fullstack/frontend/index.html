@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>EMS — Employee Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{--bg0:#030810;--bg1:#060d1a;--bg2:#0d1b30;--sf:rgba(255,255,255,.04);--sf2:rgba(255,255,255,.09);--br:rgba(255,255,255,.08);--br2:rgba(255,255,255,.15);--tx:#e2e8f5;--mu:#55708a;--dim:#1e3050;--fn:'Outfit',sans-serif;--mo:'JetBrains Mono',monospace;--rad:12px;--sb:240px;--tb:52px;--bn:64px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{font-family:var(--fn);background:var(--bg0);color:var(--tx);min-height:100%;}
+input,select,textarea,button{font-family:var(--fn);}
+select{-webkit-appearance:none;}
+#loading{position:fixed;inset:0;background:var(--bg0);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
+.ld-txt{font-size:36px;font-weight:900;letter-spacing:-.04em;animation:ldp 1.2s ease-in-out infinite;}
+.ld-txt span{color:#93c5fd;}
+@keyframes ldp{0%,100%{opacity:.2;}50%{opacity:1;}}
+#toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(90px);background:var(--bg2);border:1px solid var(--br2);border-radius:10px;padding:11px 20px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:9990;opacity:0;transition:all .3s;white-space:nowrap;max-width:88vw;text-align:center;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+#auth{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));overflow-y:auto;position:relative;background:var(--bg0);}
+#auth.on{display:flex;}
+.orbs{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.15;animation:op 9s ease-in-out infinite;}
+.orb1{width:500px;height:500px;background:radial-gradient(#1e40af,transparent);top:-200px;left:-120px;}
+.orb2{width:380px;height:380px;background:radial-gradient(#7c3aed,transparent);bottom:-100px;right:-80px;animation-delay:3s;}
+.orb3{width:260px;height:260px;background:radial-gradient(#0d9488,transparent);bottom:25%;left:15%;animation-delay:6s;}
+@keyframes op{0%,100%{opacity:.12;transform:scale(1);}50%{opacity:.2;transform:scale(1.2);}}
+.abox{position:relative;z-index:1;width:100%;max-width:420px;background:rgba(6,13,26,.92);border:1px solid var(--br2);border-radius:20px;padding:clamp(20px,5vw,36px);backdrop-filter:blur(24px);box-shadow:0 24px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.07);animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.a-logo{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:20px;}
+.a-ic{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#1d4ed8,#0d9488);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 20px rgba(29,78,216,.4);}
+.a-nm{font-size:21px;font-weight:800;letter-spacing:-.03em;}
+.a-nm span{color:#93c5fd;}
+.a-h{font-size:clamp(18px,5vw,23px);font-weight:700;text-align:center;margin-bottom:4px;letter-spacing:-.02em;}
+.a-s{font-size:12px;color:var(--mu);text-align:center;margin-bottom:16px;}
+.hints{background:var(--sf);border:1px solid var(--br);border-radius:10px;padding:10px 12px;margin-bottom:15px;}
+.ht{font-size:9px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.9px;margin-bottom:6px;}
+.hi{display:flex;align-items:center;gap:8px;padding:6px 7px;border-radius:7px;cursor:pointer;transition:background .15s;margin-bottom:2px;}
+.hi:last-child{margin-bottom:0;}
+.hi:hover,.hi:active{background:var(--sf2);}
+.hdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hinfo{flex:1;font-size:11px;color:var(--mu);}
+.hinfo strong{color:var(--tx);font-weight:600;}
+.fg{margin-bottom:12px;}
+.fl{display:block;font-size:10px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.fi{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--br2);border-radius:9px;padding:12px 14px;color:var(--tx);font-size:14px;outline:none;transition:all .2s;-webkit-appearance:none;appearance:none;}
+.fi:focus{border-color:#3b82f6;background:rgba(59,130,246,.08);box-shadow:0 0 0 3px rgba(59,130,246,.12);}
+.fi.err{border-color:#f87171;}
+.fi::placeholder{color:var(--mu);}
+.pw-w{position:relative;}
+.pw-e{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:14px;cursor:pointer;padding:5px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ferr{display:none;color:#f87171;font-size:11px;margin-top:5px;}
+.ferr.on{display:block;}
+.btn-a{width:100%;padding:13px;border-radius:9px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;box-shadow:0 6px 20px rgba(29,78,216,.4);transition:all .2s;margin-top:4px;}
+.btn-a:hover{transform:translateY(-1px);}
+.btn-a:active{transform:translateY(0);}
+.div{display:flex;align-items:center;gap:10px;margin:14px 0;}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--br);}
+.div span{font-size:10px;color:var(--mu);}
+.sw{text-align:center;font-size:12px;color:var(--mu);}
+.sw a{color:#93c5fd;font-weight:600;cursor:pointer;}
+#app{display:none;}
+#app.on{display:block;min-height:100vh;}
+.sidebar{position:fixed;top:0;left:0;bottom:0;z-index:300;width:var(--sb);background:var(--bg1);border-right:1px solid var(--br);display:flex;flex-direction:column;transition:transform .28s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.sb-hd{padding:14px 12px 11px;border-bottom:1px solid var(--br);flex-shrink:0;position:relative;}
+.sb-logo{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+.sb-li{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.sb-ln{font-size:13px;font-weight:800;letter-spacing:-.02em;}
+.sb-ln span{color:#93c5fd;}
+.sb-usr{display:flex;align-items:center;gap:9px;}
+.sb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-nm{font-size:11px;font-weight:600;line-height:1.25;}
+.sb-rl{font-size:9px;color:var(--mu);}
+.sb-x{display:none;position:absolute;top:12px;right:10px;width:28px;height:28px;border-radius:50%;background:var(--sf2);border:1px solid var(--br);color:var(--mu);font-size:13px;cursor:pointer;align-items:center;justify-content:center;}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 7px;}
+.sb-nav::-webkit-scrollbar{width:3px;}
+.sb-nav::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px;}
+.sbi{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:9px;font-size:12px;color:var(--mu);cursor:pointer;transition:all .15s;margin-bottom:2px;border:1px solid transparent;min-height:40px;user-select:none;}
+.sbi i{font-size:12px;width:14px;text-align:center;flex-shrink:0;}
+.sbi:hover{background:var(--sf2);color:var(--tx);}
+.sbi.act{color:#fff;}
+.sb-bdg{margin-left:auto;font-size:8px;padding:2px 6px;border-radius:8px;font-weight:700;background:#ef4444;color:#fff;}
+.sb-ft{padding:10px;border-top:1px solid var(--br);flex-shrink:0;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));}
+.sb-out{display:flex;align-items:center;gap:8px;padding:10px 11px;border-radius:9px;font-size:12px;color:#f87171;cursor:pointer;transition:all .15s;min-height:40px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);}
+.sb-out:hover,.sb-out:active{background:rgba(239,68,68,.18);}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:299;backdrop-filter:blur(3px);}
+#ov.on{display:block;}
+.main{margin-left:var(--sb);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;}
+.tb{height:var(--tb);background:var(--bg1);border-bottom:1px solid var(--br);display:flex;align-items:center;padding:0 14px;gap:8px;position:sticky;top:0;z-index:200;}
+.tb-ham{display:none;width:36px;height:36px;border-radius:8px;background:var(--sf);border:1px solid var(--br);align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--mu);flex-shrink:0;}
+.tb-t{font-size:15px;font-weight:700;flex:1;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tb-src{display:flex;align-items:center;gap:7px;background:var(--sf2);border:1px solid var(--br);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--mu);width:185px;flex-shrink:0;}
+.tb-r{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.tb-dt{font-family:var(--mo);font-size:10px;color:var(--mu);}
+.tb-ic{width:34px;height:34px;border-radius:8px;background:var(--sf);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--mu);cursor:pointer;position:relative;transition:all .2s;}
+.tb-ic:hover{background:var(--sf2);color:var(--tx);}
+.tb-nb{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#ef4444;border:1px solid var(--bg1);}
+.pg{flex:1;padding:18px;overflow-x:hidden;}
+.bn{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(6,13,26,.97);border-top:1px solid var(--br);z-index:250;padding:5px 4px;padding-bottom:calc(5px + env(safe-area-inset-bottom,0px));flex-direction:row;justify-content:space-around;align-items:stretch;backdrop-filter:blur(20px);}
+.bni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 6px;border-radius:9px;cursor:pointer;transition:all .2s;flex:1;min-height:44px;position:relative;}
+.bni i{font-size:17px;color:var(--mu);transition:color .2s;}
+.bni span{font-size:9px;color:var(--mu);transition:color .2s;font-weight:500;}
+.bni.act i,.bni.act span{color:#93c5fd;}
+.bni.act{background:rgba(59,130,246,.12);}
+.bni-bdg{position:absolute;top:3px;right:10px;width:15px;height:15px;border-radius:50%;background:#ef4444;color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.bn-so i{color:#f87171!important;}
+.bn-so span{color:#f87171!important;}
+.bn-so:hover,.bn-so:active{background:rgba(239,68,68,.12)!important;}
+.pt{font-size:clamp(17px,4vw,21px);font-weight:700;letter-spacing:-.02em;margin-bottom:3px;}
+.ps{font-size:12px;color:var(--mu);margin-bottom:16px;line-height:1.55;}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;}
+.sc{background:var(--bg1);border:1px solid var(--br);border-radius:var(--rad);padding:14px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;min-width:0;}
+.sc:hover{border-color:var(--br2);transform:translateY(-2px);}
+.sc-i{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:9px;}
+.sc-v{font-size:clamp(17px,3.5vw,23px);font-weight:800;line-height:1;margin-bottom:3px;letter-spacing:-.03em;}
+.sc-l{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.sc-s{font-size:10px;color:var(--mu);}
+.card{background:var(--bg1);border:1px solid var(--br);border-radius:var(--rad);overflow:hidden;margin-bottom:13px;min-width:0;}
+.card:last-child{margin-bottom:0;}
+.ch{padding:11px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;min-height:44px;}
+.ch h3{font-size:13px;font-weight:600;}
+.cb{padding:14px;}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:13px;}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:11px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+.tw::-webkit-scrollbar{height:3px;}
+.tw::-webkit-scrollbar-thumb{background:var(--dim);}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:400px;}
+.tbl th{padding:8px 12px;text-align:left;font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--br);font-weight:600;white-space:nowrap;}
+.tbl td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);color:#7a90a8;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+.bdg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;}
+.bgn{background:rgba(34,197,94,.15);color:#4ade80;}
+.bgr{background:rgba(239,68,68,.15);color:#f87171;}
+.bgy{background:rgba(245,158,11,.15);color:#fbbf24;}
+.bgb{background:rgba(59,130,246,.15);color:#93c5fd;}
+.bgp{background:rgba(139,92,246,.15);color:#c4b5fd;}
+.bgpk{background:rgba(236,72,153,.15);color:#f9a8d4;}
+.bgt{background:rgba(16,185,129,.15);color:#6ee7b7;}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;}
+.av32{width:32px;height:32px;font-size:12px;}
+.av28{width:28px;height:28px;font-size:10px;}
+.av24{width:24px;height:24px;font-size:9px;}
+.a1{background:linear-gradient(135deg,#1d4ed8,#0d9488);}
+.a2{background:linear-gradient(135deg,#7c3aed,#db2777);}
+.a3{background:linear-gradient(135deg,#d97706,#dc2626);}
+.a4{background:linear-gradient(135deg,#059669,#0284c7);}
+.a5{background:linear-gradient(135deg,#7c3aed,#1d4ed8);}
+.prog{background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+.pb{height:100%;border-radius:4px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;min-height:36px;}
+.btn-p{background:#3b82f6;color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.3);}
+.btn-p:hover{background:#2563eb;}
+.btn-o{background:transparent;color:var(--mu);border:1px solid var(--br);}
+.btn-o:hover{color:var(--tx);border-color:var(--br2);}
+.btn-sm{padding:5px 11px;font-size:10px;min-height:30px;}
+.btn-g{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25);}
+.btn-g:hover{background:rgba(34,197,94,.25);}
+.btn-r{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.btn-r:hover{background:rgba(239,68,68,.22);}
+.inp{width:100%;background:var(--sf2);border:1px solid var(--br2);border-radius:8px;padding:10px 12px;color:var(--tx);font-size:12px;outline:none;transition:border-color .2s;min-height:40px;-webkit-appearance:none;appearance:none;}
+.inp:focus{border-color:#3b82f6;}
+.ilbl{font-size:9px;color:var(--mu);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.ig{display:flex;flex-direction:column;gap:3px;margin-bottom:11px;}
+.tog{width:36px;height:20px;border-radius:10px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.tog.on{background:#3b82f6;}.tog.off{background:var(--dim);}
+.tog::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;transition:left .2s;}
+.tog.on::after{left:18px;}.tog.off::after{left:2px;}
+.al{padding:11px 14px;border-radius:9px;font-size:11px;display:flex;align-items:flex-start;gap:9px;margin-bottom:12px;line-height:1.55;}
+.al-w{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fbbf24;}
+.al-e{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;}
+.al-g{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#4ade80;}
+.appr{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--sf);border:1px solid var(--br);border-radius:9px;margin-bottom:6px;flex-wrap:wrap;}
+.appr:last-child{margin-bottom:0;}
+.ir{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:10px;}
+.ir:last-child{border-bottom:none;}
+.ir span:first-child{font-size:11px;color:var(--mu);flex-shrink:0;}
+.ir span:last-child{font-size:12px;font-weight:500;text-align:right;}
+.prow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;}
+.prow:last-child{border-bottom:none;}
+.lbc{border-radius:var(--rad);padding:14px;text-align:center;}
+.lbv{font-size:clamp(24px,6vw,32px);font-weight:900;line-height:1;margin-bottom:3px;}
+.lbl2{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.lbs{font-size:10px;color:var(--mu);}
+.nb{background:linear-gradient(135deg,rgba(29,78,216,.15),rgba(13,148,136,.1));border:1px solid rgba(29,78,216,.25);border-radius:9px;padding:14px;text-align:center;}
+.cib{width:96px;height:96px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid;cursor:pointer;transition:all .3s;margin:0 auto;font-weight:700;font-size:12px;gap:5px;}
+@media(max-width:1099px){:root{--sb:200px;}.tb-src{width:145px;}.tb-dt{display:none;}}
+@media(max-width:767px){.sidebar{transform:translateX(calc(-100% - 10px));}.sidebar.open{transform:translateX(0);box-shadow:0 0 60px rgba(0,0,0,.85);}.sb-x{display:flex;}.main{margin-left:0;}.tb-ham{display:flex;}.tb-src{display:none;}.tb-dt{display:none;}.bn{display:flex;}.pg{padding:12px;padding-bottom:calc(var(--bn) + 16px + env(safe-area-inset-bottom,0px));}}
+@media(max-width:420px){.sg{grid-template-columns:1fr 1fr;}.sc{padding:11px;}.sc-v{font-size:16px;}.frow{grid-template-columns:1fr;}.fg2{grid-template-columns:1fr;}.abox{padding:16px 13px;}}
+</style>
+</head>
+<body>
+<div id="loading"><div class="ld-txt">EM<span>S</span></div></div>
+<div id="toast"></div>
+
+<div id="auth" class="on">
+  <div class="orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+  <div id="lw" class="abox">
+    <div class="a-logo"><div class="a-ic">🏢</div><div class="a-nm">EM<span>S</span></div></div>
+    <div class="a-h">Welcome Back</div>
+    <div class="a-s">Sign in to Employee Management System</div>
+    <div class="hints">
+      <div class="ht">👆 Tap to auto-fill</div>
+      <div class="hi" onclick="fill('emp001@ems.com','Emp@2026')"><div class="hdot" style="background:#3b82f6"></div><div class="hinfo"><strong>Employee</strong> — emp001 / Emp@2026</div></div>
+      <div class="hi" onclick="fill('mgr001@ems.com','Mgr@2026')"><div class="hdot" style="background:#8b5cf6"></div><div class="hinfo"><strong>Manager</strong> — mgr001 / Mgr@2026</div></div>
+      <div class="hi" onclick="fill('hr001@ems.com','Hr@2026')"><div class="hdot" style="background:#ec4899"></div><div class="hinfo"><strong>HR Manager</strong> — hr001 / Hr@2026</div></div>
+      <div class="hi" onclick="fill('admin001@ems.com','Admin@2026')"><div class="hdot" style="background:#f59e0b"></div><div class="hinfo"><strong>Admin</strong> — admin001 / Admin@2026</div></div>
+      <div class="hi" onclick="fill('ceo001@ems.com','Ceo@2026')"><div class="hdot" style="background:#10b981"></div><div class="hinfo"><strong>CEO</strong> — ceo001 / Ceo@2026</div></div>
+    </div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" id="l-em" type="email" placeholder="you@ems.com" autocomplete="username"/></div>
+    <div class="fg"><label class="fl">Password</label><div class="pw-w"><input class="fi" id="l-pw" type="password" placeholder="Password" autocomplete="current-password"/><span class="pw-e" onclick="tpw('l-pw',this)"><i class="fas fa-eye"></i></span></div></div>
+    <div class="ferr" id="l-err">❌ Invalid email or password.</div>
+    <button class="btn-a" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+    <div class="div"><span>OR</span></div>
+    <div class="sw">No account? <a onclick="showA('signup')">Create one →</a></div>
+  </div>
+  <div id="sw" class="abox" style="display:none">
+    <div class="a-logo"><div class="a-ic">🏢</div><div class="a-nm">EM<span>S</span></div></div>
+    <div class="a-h">Create Account</div>
+    <div class="a-s">Join Employee Management System</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">First Name</label><input class="fi" id="s-fn" placeholder="Rahul"/></div>
+      <div class="fg"><label class="fl">Last Name</label><input class="fi" id="s-ln" placeholder="Sharma"/></div>
+    </div>
+    <div class="fg"><label class="fl">Work Email</label><input class="fi" id="s-em" type="email" placeholder="rahul@company.com"/></div>
+    <div class="fg"><label class="fl">Password</label><div class="pw-w"><input class="fi" id="s-pw" type="password" placeholder="Min 6 characters"/><span class="pw-e" onclick="tpw('s-pw',this)"><i class="fas fa-eye"></i></span></div></div>
+    <div class="fg"><label class="fl">Department</label><select class="fi" id="s-dp"><option value="">Select Department</option><option>Engineering</option><option>Marketing</option><option>Sales</option><option>Finance</option><option>HR</option><option>Operations</option></select></div>
+    <div class="ferr" id="s-err">Please fill all fields.</div>
+    <button class="btn-a" style="background:linear-gradient(135deg,#7c3aed,#2563eb)" onclick="doSignup()"><i class="fas fa-user-plus"></i> Create Account</button>
+    <div class="div"><span>OR</span></div>
+    <div class="sw">Have account? <a onclick="showA('login')">Sign in →</a></div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="ov" onclick="closeSB()"></div>
+  <div class="sidebar" id="sb">
+    <div class="sb-hd">
+      <button class="sb-x" onclick="closeSB()"><i class="fas fa-times"></i></button>
+      <div class="sb-logo"><div class="sb-li" id="sb-li">🏢</div><div class="sb-ln">EM<span>S</span></div></div>
+      <div class="sb-usr"><div class="sb-av" id="sb-av">?</div><div><div class="sb-nm" id="sb-nm">Loading</div><div class="sb-rl" id="sb-rl">—</div></div></div>
+    </div>
+    <div class="sb-nav" id="sb-nav"></div>
+    <div class="sb-ft"><div class="sb-out" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Sign Out</div></div>
+  </div>
+  <div class="main">
+    <div class="tb">
+      <div class="tb-ham" onclick="openSB()"><i class="fas fa-bars"></i></div>
+      <div class="tb-t" id="tb-t">Dashboard</div>
+      <div class="tb-src"><i class="fas fa-magnifying-glass" style="font-size:9px;opacity:.4"></i> Search...</div>
+      <div class="tb-r">
+        <div class="tb-dt" id="tb-d"></div>
+        <div class="tb-ic" onclick="showNotifs()"><i class="fas fa-bell"></i><div class="tb-nb" id="notif-dot"></div></div>
+        <div class="av av28" id="top-av" style="cursor:pointer;font-size:10px" onclick="go('profile')">?</div>
+      </div>
+    </div>
+    <div class="pg" id="pg"></div>
+  </div>
+  <nav class="bn" id="bn"></nav>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  EMS — FULLSTACK VERSION
+//  Connects to Express + MongoDB backend via REST API
+//  Token stored in localStorage; all data from server
+// ═══════════════════════════════════════════════════════════════
+
+const API_BASE = 'http://localhost:5000/api'; // ← Change to your deployed backend URL
+
+// ── API HELPER ────────────────────────────────────────────────
+let authToken = localStorage.getItem('ems_token') || null;
+
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (authToken) opts.headers['Authorization'] = 'Bearer ' + authToken;
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API_BASE + path, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Request failed');
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function nowStr()    { return new Date().toTimeString().slice(0,5); }
+function todayStr()  { return new Date().toISOString().split('T')[0]; }
+function curMonth()  { return new Date().toISOString().slice(0,7); }
+function fmt(n)      { return (n||0).toLocaleString('en-IN'); }
+function fmtL(n)     { if(!n) return '0'; if(n>=100000) return (n/100000).toFixed(1)+'L'; return (n/1000).toFixed(1)+'K'; }
+
+// ── UI STATE ──────────────────────────────────────────────────
+const RL = { employee:'Employee', manager:'Manager', hr:'HR Manager', admin:'Administrator', ceo:'CEO' };
+let U = null;
+
+const NAV = {
+  employee:[{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-user',t:'Profile',p:'profile'},{i:'fa-fingerprint',t:'Attendance',p:'attend'},{i:'fa-calendar-xmark',t:'Leaves',p:'leave'},{i:'fa-coins',t:'Payslips',p:'payslip'},{i:'fa-chart-line',t:'Performance',p:'perf'},{i:'fa-gear',t:'Settings',p:'settings'}],
+  manager: [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-users',t:'My Team',p:'emps'},{i:'fa-calendar-check',t:'Approvals',p:'appr'},{i:'fa-fingerprint',t:'Attendance',p:'attend'},{i:'fa-chart-line',t:'Performance',p:'perf'},{i:'fa-chart-pie',t:'Reports',p:'rpts'},{i:'fa-gear',t:'Settings',p:'settings'}],
+  hr:      [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-user-plus',t:'Onboarding',p:'onboard'},{i:'fa-users',t:'Employees',p:'emps'},{i:'fa-coins',t:'Payroll',p:'payroll'},{i:'fa-chart-bar',t:'Reports',p:'rpts'},{i:'fa-gear',t:'Settings',p:'settings'}],
+  admin:   [{i:'fa-grid-2',t:'Dashboard',p:'dash'},{i:'fa-users-gear',t:'Users & Roles',p:'users'},{i:'fa-sliders',t:'Settings',p:'settings'},{i:'fa-scroll',t:'Audit Logs',p:'audit'},{i:'fa-shield-halved',t:'Security',p:'gen'}],
+  ceo:     [{i:'fa-chart-pie',t:'Overview',p:'dash'},{i:'fa-users',t:'Headcount',p:'rpts'},{i:'fa-coins',t:'Payroll Cost',p:'payroll'},{i:'fa-star',t:'Performance',p:'perf'},{i:'fa-file-pdf',t:'Board Report',p:'board'}]
+};
+const BN = {
+  employee:['dash','attend','leave','payslip','settings'],
+  manager: ['dash','emps','appr','perf','settings'],
+  hr:      ['dash','emps','payroll','onboard','settings'],
+  admin:   ['dash','users','audit','settings'],
+  ceo:     ['dash','rpts','payroll','perf','board']
+};
+
+// ── AUTH ──────────────────────────────────────────────────────
+function showA(v) {
+  document.getElementById('lw').style.display = v==='login' ? '' : 'none';
+  document.getElementById('sw').style.display = v==='signup' ? '' : 'none';
+}
+function fill(e, p) {
+  document.getElementById('l-em').value = e;
+  document.getElementById('l-pw').value = p;
+  document.getElementById('l-err').classList.remove('on');
+}
+function tpw(id, el) {
+  const i = document.getElementById(id);
+  i.type = i.type==='password' ? 'text' : 'password';
+  el.innerHTML = `<i class="fas fa-eye${i.type==='text'?'-slash':''}"></i>`;
+}
+
+async function doLogin() {
+  const em = document.getElementById('l-em').value.trim().toLowerCase();
+  const pw = document.getElementById('l-pw').value;
+  const errEl = document.getElementById('l-err');
+  const btn = document.querySelector('#lw .btn-a');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+  try {
+    const data = await api('POST', '/auth/login', { email: em, password: pw });
+    authToken = data.token;
+    localStorage.setItem('ems_token', authToken);
+    U = data.user;
+    errEl.classList.remove('on');
+    launch();
+  } catch(err) {
+    errEl.textContent = '❌ ' + (err.message || 'Invalid email or password.');
+    errEl.classList.add('on');
+    ['l-em','l-pw'].forEach(id => { const el=document.getElementById(id); el.classList.add('err'); setTimeout(()=>el.classList.remove('err'),1500); });
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+  }
+}
+
+async function doSignup() {
+  const fn = document.getElementById('s-fn').value.trim();
+  const ln = document.getElementById('s-ln').value.trim();
+  const em = document.getElementById('s-em').value.trim().toLowerCase();
+  const pw = document.getElementById('s-pw').value;
+  const dp = document.getElementById('s-dp').value;
+  const err = document.getElementById('s-err');
+  if (!fn||!ln||!em||!pw||!dp) { err.textContent='⚠️ Fill all required fields.'; err.classList.add('on'); return; }
+  if (pw.length < 6) { err.textContent='⚠️ Password must be 6+ chars.'; err.classList.add('on'); return; }
+  try {
+    await api('POST', '/auth/signup', { firstName:fn, lastName:ln, email:em, password:pw, dept:dp });
+    err.classList.remove('on');
+    toast('🎉 Account created! Welcome, '+fn+'!');
+    setTimeout(()=>{ fill(em,pw); showA('login'); }, 1000);
+  } catch(e) {
+    err.textContent = '⚠️ ' + e.message;
+    err.classList.add('on');
+  }
+}
+
+async function doLogout() {
+  try { await api('POST', '/auth/logout'); } catch {}
+  authToken = null;
+  localStorage.removeItem('ems_token');
+  U = null;
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('auth').classList.add('on');
+  showA('login');
+  toast('👋 Signed out successfully');
+}
+
+// ── LAUNCH ────────────────────────────────────────────────────
+function avatarHtml(u, size=40, extraCss='') {
+  const sz = size+'px';
+  if (u.photo) return `<img src="${u.photo}" style="width:${sz};height:${sz};border-radius:50%;object-fit:cover;flex-shrink:0;${extraCss}" alt="${u.name}"/>`;
+  const cls = u.av || 'a1';
+  return `<div class="av ${cls}" style="width:${sz};height:${sz};font-size:${Math.round(size*.3)}px;flex-shrink:0;${extraCss}">${u.ini||'?'}</div>`;
+}
+
+function launch() {
+  document.getElementById('auth').classList.remove('on');
+  document.getElementById('app').classList.add('on');
+  const u = U;
+  // Top bar avatar
+  const ta = document.getElementById('top-av');
+  if (u.photo) { ta.innerHTML=''; ta.style.cssText='width:28px;height:28px;border-radius:50%;overflow:hidden;cursor:pointer;flex-shrink:0;'; ta.innerHTML=`<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover;" alt="${u.name}"/>`; ta.className='av av28'; }
+  else { ta.textContent=u.ini; ta.className='av av28 '+(u.av||'a1'); }
+  document.getElementById('tb-d').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  // Sidebar avatar
+  const sa = document.getElementById('sb-av');
+  if (u.photo) { sa.innerHTML=`<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="${u.name}"/>`; sa.className='sb-av'; }
+  else { sa.textContent=u.ini; sa.className='sb-av '+(u.av||'a1'); }
+  document.getElementById('sb-nm').textContent = u.name;
+  document.getElementById('sb-rl').textContent = RL[u.role]||u.role;
+  document.getElementById('sb-li').style.background = 'linear-gradient(135deg,'+(u.c||'#3b82f6')+',#0d9488)';
+  buildSB(); buildBN(); go('dash');
+  toast('✅ Welcome back, '+u.name.split(' ')[0]+'!');
+  updateNotifDot();
+}
+
+async function updateNotifDot() {
+  try {
+    if (!['manager','hr','admin'].includes(U?.role)) { document.getElementById('notif-dot').style.display='none'; return; }
+    const data = await api('GET', '/leaves/pending');
+    const dot = document.getElementById('notif-dot');
+    if (dot) dot.style.display = data.leaves.length > 0 ? 'block' : 'none';
+  } catch {}
+}
+
+// ── SIDEBAR & NAV ─────────────────────────────────────────────
+function buildSB() {
+  const nav = NAV[U.role]||[];
+  document.getElementById('sb-nav').innerHTML = nav.map(n =>
+    `<div class="sbi" data-p="${n.p}" onclick="go('${n.p}');closeSB()"><i class="fas ${n.i}"></i>${n.t}</div>`
+  ).join('');
+}
+function openSB()  { document.getElementById('sb').classList.add('open'); document.getElementById('ov').classList.add('on'); document.body.style.overflow='hidden'; }
+function closeSB() { document.getElementById('sb').classList.remove('open'); document.getElementById('ov').classList.remove('on'); document.body.style.overflow=''; }
+function buildBN() {
+  const ps=BN[U.role]||[], all=NAV[U.role]||[];
+  let html = ps.map(p=>{ const n=all.find(x=>x.p===p); if(!n) return ''; return `<div class="bni" data-p="${p}" onclick="go('${p}')"><i class="fas ${n.i}"></i><span>${n.t}</span></div>`; }).join('');
+  html += '<div class="bni bn-so" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i><span>Sign Out</span></div>';
+  document.getElementById('bn').innerHTML = html;
+}
+async function showNotifs() {
+  try {
+    const data = await api('GET', '/leaves/pending');
+    if (!data.leaves.length) { toast('🔔 No new notifications'); return; }
+    toast('🔔 ' + data.leaves.length + ' pending leave approval' + (data.leaves.length>1?'s':''));
+  } catch { toast('🔔 Notifications unavailable'); }
+}
+
+// ── ROUTING ───────────────────────────────────────────────────
+function go(p) {
+  const u = U;
+  document.querySelectorAll('.sbi').forEach(el=>{ const a=el.dataset.p===p; el.classList.toggle('act',a); el.style.background=a?u.b:''; el.style.color=a?u.l:''; });
+  document.querySelectorAll('.bni[data-p]').forEach(el=>{ el.classList.toggle('act', el.dataset.p===p); });
+  const tb = NAV[u.role]?.find(n=>n.p===p);
+  document.getElementById('tb-t').textContent = tb?.t||'EMS';
+  const pg = document.getElementById('pg');
+  pg.innerHTML = '<div style="text-align:center;padding:60px;color:var(--mu)"><i class="fas fa-circle-notch fa-spin" style="font-size:24px"></i></div>';
+  // All page functions are async now
+  const pageMap = {
+    dash: pDash, profile: pProfile, attend: pAttend, leave: pLeave,
+    payslip: pPayslip, perf: pPerf, payroll: pPayroll, emps: pEmps,
+    appr: pAppr, rpts: pRpts, settings: pSettings, audit: pAudit,
+    onboard: pOnboard, board: pBoard, users: pUsers,
+  };
+  const fn = pageMap[p];
+  if (fn) {
+    fn(u).then(html => { pg.innerHTML = html; }).catch(e => {
+      pg.innerHTML = `<div class="card"><div class="cb" style="text-align:center;padding:40px"><div style="font-size:36px">⚠️</div><div style="margin-top:8px;font-size:12px;color:var(--mu)">${e.message}</div></div></div>`;
+    });
+  } else {
+    pg.innerHTML = pGen(p, u);
+  }
+}
+
+// ══ PAGES (all async, fetching from API) ═════════════════════
+
+// ── DASHBOARD ────────────────────────────────────────────────
+async function pDash(u) {
+  const c=u.c, l=u.l, b=u.b, r=u.role;
+  let statsHtml = '', cardsHtml = '';
+  try {
+    if (r === 'employee' || r === 'manager') {
+      const [attRes, leaveRes] = await Promise.all([
+        api('GET', '/attendance/my?month='+curMonth()),
+        api('GET', '/leaves/balance'),
+      ]);
+      const recs = attRes.records||[];
+      const present = recs.filter(r=>r.status==='present').length;
+      const absent  = recs.filter(r=>r.status==='absent').length;
+      const bal = leaveRes.balance || {};
+      const casual = (bal.casual?.total||12) - (bal.casual?.used||0);
+      statsHtml = sc(1,'fa-check-circle',present,'Present','Days this month',c,l,b)
+                + sc(2,'fa-xmark',absent,'Absent','Days','\#f87171','\#fca5a5','rgba(239,68,68,.15)')
+                + sc(3,'fa-calendar-xmark',casual,'Casual Leave','Days left','\#f59e0b','\#fbbf24','rgba(245,158,11,.15)');
+    }
+    if (['hr','admin','ceo','manager'].includes(r)) {
+      const usersRes = await api('GET', '/users');
+      const users = usersRes.users||[];
+      statsHtml += sc(4,'fa-users',users.length,'Employees','Active',c,l,b);
+    }
+    cardsHtml = `<div class="card"><div class="ch"><h3>Welcome back, ${u.name.split(' ')[0]}! 👋</h3></div><div class="cb"><div class="al al-g"><i class="fas fa-circle-check"></i> You are logged in as <strong>${RL[u.role]}</strong> — ${u.dept||'N/A'}</div><div class="al al-w" style="margin-bottom:0"><i class="fas fa-triangle-exclamation"></i> Use the sidebar to navigate modules.</div></div></div>`;
+  } catch(e) {
+    cardsHtml = `<div class="al al-e"><i class="fas fa-exclamation-circle"></i> Could not load dashboard data: ${e.message}</div>`;
+  }
+  return `<div class="pt">Dashboard</div><div class="ps">${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div><div class="sg">${statsHtml}</div>${cardsHtml}`;
+}
+
+// ── PROFILE ───────────────────────────────────────────────────
+async function pProfile(u) {
+  return `<div class="pt">My Profile</div><div class="ps">View and edit your details</div>
+  <div class="g2">
+    <div class="card"><div class="ch"><h3>Personal Info</h3></div><div class="cb">
+      <div style="text-align:center;margin-bottom:16px">
+        ${avatarHtml(u,72)}
+        <div style="margin-top:10px;font-size:14px;font-weight:700">${u.name}</div>
+        <div style="font-size:11px;color:var(--mu)">${u.title||''} · ${u.dept||''}</div>
+        <label class="btn btn-o btn-sm" style="margin-top:8px;cursor:pointer"><i class="fas fa-camera"></i> Photo<input type="file" accept="image/*" style="display:none" onchange="uploadPhoto(this)"/></label>
+      </div>
+      <div class="ig"><div class="ilbl">Full Name</div><input class="inp" id="p-nm" value="${u.name||''}"/></div>
+      <div class="ig"><div class="ilbl">Phone</div><input class="inp" id="p-ph" value="${u.phone||u.ph||''}"/></div>
+      <div class="ig"><div class="ilbl">Address</div><input class="inp" id="p-ad" value="${u.address||''}"/></div>
+      <button class="btn btn-p" onclick="saveProfile()"><i class="fas fa-save"></i> Save Changes</button>
+    </div></div>
+    <div class="card"><div class="ch"><h3>Employee Details</h3></div><div class="cb">
+      ${ir('Employee ID', u.eid||'—')}${ir('Email', u.email)}${ir('Department', u.dept||'—')}${ir('Title', u.title||'—')}${ir('Join Date', u.joinDate||u.join||'—')}${ir('Bank Account', u.bankAcc||'—')}
+    </div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>Change Password</h3></div><div class="cb">
+    <div class="fg2">
+      <div class="ig"><div class="ilbl">Current Password</div><input class="inp" id="pw-cur" type="password" placeholder="Current"/></div>
+      <div class="ig"><div class="ilbl">New Password</div><input class="inp" id="pw-new" type="password" placeholder="New (6+ chars)"/></div>
+    </div>
+    <button class="btn btn-o" onclick="changePassword()"><i class="fas fa-key"></i> Change Password</button>
+  </div></div>`;
+}
+
+async function saveProfile() {
+  const name = document.getElementById('p-nm')?.value.trim();
+  const phone = document.getElementById('p-ph')?.value.trim();
+  const address = document.getElementById('p-ad')?.value.trim();
+  if (!name) return toast('⚠️ Name cannot be empty.');
+  try {
+    const data = await api('PUT', '/users/'+U._id, { name, phone, address });
+    U = { ...U, ...data.user };
+    document.getElementById('sb-nm').textContent = U.name;
+    toast('✅ Profile updated!');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+async function uploadPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2*1024*1024) { toast('❌ Photo must be under 2MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const data = await api('PUT', '/users/'+U._id, { photo: e.target.result });
+      U = { ...U, photo: e.target.result };
+      const ta = document.getElementById('top-av');
+      ta.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;" alt="${U.name}"/>`;
+      ta.style.cssText = 'width:28px;height:28px;border-radius:50%;overflow:hidden;cursor:pointer;flex-shrink:0;';
+      toast('✅ Profile photo updated!');
+      go('profile');
+    } catch(err) { toast('❌ '+err.message); }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function changePassword() {
+  const cur = document.getElementById('pw-cur')?.value;
+  const nw  = document.getElementById('pw-new')?.value;
+  if (!cur||!nw) return toast('⚠️ Fill both fields.');
+  if (nw.length < 6) return toast('⚠️ New password must be 6+ chars.');
+  try {
+    await api('PUT', '/users/change-password', { currentPassword: cur, newPassword: nw });
+    document.getElementById('pw-cur').value = '';
+    document.getElementById('pw-new').value = '';
+    toast('✅ Password changed successfully!');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── ATTENDANCE ────────────────────────────────────────────────
+async function pAttend(u) {
+  const [todayRes, myRes] = await Promise.all([
+    api('GET', '/attendance/today'),
+    api('GET', '/attendance/my?month='+curMonth()),
+  ]);
+  const today = todayRes.attendance;
+  const recs  = myRes.records||[];
+  const present   = recs.filter(r=>r.status==='present').length;
+  const absent    = recs.filter(r=>r.status==='absent').length;
+  const leavedays = recs.filter(r=>r.status==='leave').length;
+  const totalHrs  = recs.reduce((s,r)=>s+(r.hoursWorked||0),0).toFixed(1);
+  const statusBadge = today
+    ? (today.checkOut ? `<span class="bdg bgn">Out ${today.checkOut}</span>` : today.checkIn ? `<span class="bdg bgy">In ${today.checkIn}</span>` : '<span class="bdg bgr">Not Checked In</span>')
+    : '<span class="bdg bgr">Not Checked In</span>';
+  const rows = recs.slice(0,15).map(r=>`<tr><td style="font-family:var(--mo);font-size:10px">${r.date}</td><td>${r.checkIn||'—'}</td><td>${r.checkOut||'—'}</td><td>${r.hoursWorked||'—'}</td><td>${sBadge(r.status)}</td></tr>`).join('');
+  const isOut = today?.checkIn && !today?.checkOut;
+  return `<div class="pt">Attendance</div><div class="ps">Track your daily attendance</div>
+  <div class="sg">
+    ${sc(1,'fa-check-circle',present,'Present','Days this month',u.c,u.l,u.b)}
+    ${sc(2,'fa-xmark',absent,'Absent','Days this month','#f87171','#fca5a5','rgba(239,68,68,.15)')}
+    ${sc(3,'fa-clock',totalHrs,'Hours','This month','#8b5cf6','#c4b5fd','rgba(139,92,246,.15)')}
+    ${sc(4,'fa-calendar-xmark',leavedays,'On Leave','Days this month','#f59e0b','#fbbf24','rgba(245,158,11,.15)')}
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><h3>Today</h3>${statusBadge}</div><div class="cb" style="text-align:center;padding:24px">
+      <div class="cib" id="cib-btn" onclick="doCheckin()" style="${isOut?'border-color:#f59e0b;color:#f59e0b':'border-color:'+u.c+';color:'+u.c}">
+        <i class="fas ${isOut?'fa-sign-out-alt':'fa-fingerprint'}" style="font-size:28px"></i>
+        <span>${isOut?'Check Out':'Check In'}</span>
+      </div>
+      ${today?.checkIn ? `<div style="margin-top:14px;font-size:12px;color:var(--mu)">In: <strong style="color:var(--tx)">${today.checkIn}</strong>${today.checkOut?' &nbsp; Out: <strong style="color:var(--tx)">'+today.checkOut+'</strong>':''}</div>` : ''}
+    </div></div>
+    <div class="card"><div class="ch"><h3>This Month — ${new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</h3></div>
+      <div class="tw"><table class="tbl"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Hrs</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </div>
+  </div>`;
+}
+
+function sBadge(s) {
+  return {present:'<span class="bdg bgn">Present</span>',absent:'<span class="bdg bgr">Absent</span>','half-day':'<span class="bdg bgy">Half Day</span>',leave:'<span class="bdg bgb">Leave</span>',weekend:'<span class="bdg" style="background:rgba(255,255,255,.06);color:var(--mu)">Weekend</span>',holiday:'<span class="bdg bgp">Holiday</span>'}[s]||s;
+}
+
+async function doCheckin() {
+  try {
+    const data = await api('POST', '/attendance/checkin');
+    toast(data.action==='checkin' ? '✅ Checked in! Good morning!' : '✅ Checked out! Have a great evening.');
+    go('attend');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── LEAVE ─────────────────────────────────────────────────────
+async function pLeave(u) {
+  const [balRes, leavesRes] = await Promise.all([
+    api('GET', '/leaves/balance'),
+    api('GET', '/leaves/my'),
+  ]);
+  const bal = balRes.balance || {};
+  const leaves = leavesRes.leaves || [];
+  const lCard = (label,key,color,bg,border) => {
+    const b = bal[key]||{total:0,used:0}; const left=b.total-b.used; const pct=Math.round((b.used/(b.total||1))*100);
+    return `<div class="lbc" style="background:${bg};border:1px solid ${border}"><div class="lbl2" style="color:${color}">${label}</div><div class="lbv" style="color:${color}">${left}</div><div class="lbs">of ${b.total} left</div><div class="prog" style="height:3px;margin-top:8px"><div class="pb" style="width:${100-pct}%;background:${color}"></div></div></div>`;
+  };
+  const rows = leaves.slice(0,10).map(l=>`<tr><td style="text-transform:capitalize">${l.type}</td><td style="font-family:var(--mo);font-size:10px">${l.from} → ${l.to}</td><td>${l.days}</td><td>${lBadge(l.status)}</td><td>${l.status==='pending'?`<button class="btn btn-sm btn-r" onclick="cancelLeave('${l._id}')"><i class="fas fa-times"></i></button>`:''}</td></tr>`).join('');
+  return `<div class="pt">Leave Management</div><div class="ps">Balances &amp; applications</div>
+  <div class="g3" style="margin-bottom:15px">
+    ${lCard('Casual','casual',u.c,u.b,u.c+'44')}
+    ${lCard('Sick','sick','#f87171','rgba(239,68,68,.1)','rgba(239,68,68,.25)')}
+    ${lCard('Annual','annual','#4ade80','rgba(34,197,94,.1)','rgba(34,197,94,.25)')}
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><h3>Apply for Leave</h3></div><div class="cb">
+      <div class="ig"><div class="ilbl">Type</div><select class="inp" id="lv-type"><option value="casual">Casual</option><option value="sick">Sick</option><option value="annual">Annual</option><option value="unpaid">Unpaid</option></select></div>
+      <div class="fg2"><div class="ig"><div class="ilbl">From</div><input class="inp" id="lv-from" type="date"/></div><div class="ig"><div class="ilbl">To</div><input class="inp" id="lv-to" type="date"/></div></div>
+      <div class="ig"><div class="ilbl">Reason</div><textarea class="inp" id="lv-reason" style="height:70px;resize:none" placeholder="Enter reason..."></textarea></div>
+      <button class="btn btn-p" onclick="applyLeave()"><i class="fas fa-paper-plane"></i> Submit</button>
+    </div></div>
+    <div class="card"><div class="ch"><h3>My Leave History</h3></div>
+      <div class="tw"><table class="tbl"><thead><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+    </div>
+  </div>`;
+}
+
+function lBadge(s) { return {approved:'<span class="bdg bgn">Approved</span>',rejected:'<span class="bdg bgr">Rejected</span>',pending:'<span class="bdg bgy">Pending</span>'}[s]||s; }
+
+async function applyLeave() {
+  const type   = document.getElementById('lv-type')?.value;
+  const from   = document.getElementById('lv-from')?.value;
+  const to     = document.getElementById('lv-to')?.value;
+  const reason = document.getElementById('lv-reason')?.value.trim();
+  if (!type||!from||!to||!reason) return toast('⚠️ Fill all fields.');
+  try {
+    await api('POST', '/leaves/apply', { type, from, to, reason });
+    toast('✅ Leave submitted! Awaiting approval.');
+    updateNotifDot();
+    go('leave');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+async function cancelLeave(id) {
+  try {
+    await api('DELETE', '/leaves/'+id);
+    toast('✅ Leave cancelled.');
+    go('leave');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── PAYSLIPS ──────────────────────────────────────────────────
+async function pPayslip(u) {
+  const data = await api('GET', '/payroll/my');
+  const records = data.records||[];
+  if (!records.length) return `<div class="pt">Payslips</div><div class="ps">Your salary history</div><div class="card"><div class="cb" style="text-align:center;padding:40px"><div style="font-size:36px">📄</div><div style="margin-top:8px;font-size:12px;color:var(--mu)">No payslips yet</div></div></div>`;
+  const latest = records[0];
+  const rows   = records.map(p=>`<tr><td>${p.monthLabel}</td><td>₹${fmt(p.netPay)}</td><td>₹${fmt(p.gross)}</td><td>₹${fmt(p.totalDeductions)}</td><td><span class="bdg bgn">Paid</span></td></tr>`).join('');
+  return `<div class="pt">Payslips</div><div class="ps">Your salary history</div>
+  <div class="card"><div class="ch"><h3>${latest.monthLabel} — Latest</h3></div><div class="cb">
+    <div class="g3">
+      ${sc(1,'fa-coins','\u20B9'+fmt(latest.netPay),'Net Pay','Take home',u.c,u.l,u.b)}
+      ${sc(2,'fa-chart-bar','\u20B9'+fmt(latest.gross),'Gross','Before deductions','#8b5cf6','#c4b5fd','rgba(139,92,246,.15)')}
+      ${sc(3,'fa-minus-circle','\u20B9'+fmt(latest.totalDeductions),'Deductions','TDS + PF + PT','#f87171','#fca5a5','rgba(239,68,68,.15)')}
+    </div>
+    <div class="g2" style="margin-top:12px">
+      <div>${pr('Basic','\u20B9'+fmt(latest.basic),'var(--tx)')}${pr('HRA','\u20B9'+fmt(latest.hra),'var(--tx)')}${pr('Transport','\u20B9'+fmt(latest.transport),'var(--tx)')}${pr('Bonus','\u20B9'+fmt(latest.bonus||0),'#4ade80')}</div>
+      <div>${pr('TDS','-\u20B9'+fmt(latest.tds),'#f87171')}${pr('PF','-\u20B9'+fmt(latest.pf),'#f87171')}${pr('Prof. Tax','-\u20B9'+fmt(latest.profTax),'#f87171')}</div>
+    </div>
+  </div></div>
+  <div class="card"><div class="ch"><h3>All Payslips</h3></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Month</th><th>Net Pay</th><th>Gross</th><th>Deductions</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </div>`;
+}
+
+// ── PERFORMANCE ───────────────────────────────────────────────
+async function pPerf(u) {
+  const data = await api('GET', '/performance/my');
+  const records = data.records||[];
+  if (!records.length) return `<div class="pt">Performance</div><div class="ps">Your reviews</div><div class="card"><div class="cb" style="text-align:center;padding:40px"><div style="font-size:36px">⭐</div><div style="margin-top:8px;font-size:12px;color:var(--mu)">No reviews yet</div></div></div>`;
+  const r = records[0];
+  const stars = n => '⭐'.repeat(Math.round(n||0));
+  const goalRows = (r.goals||[]).map(g=>`<div class="appr"><span style="flex:1;font-size:11px">${g.title}</span><div class="prog" style="width:80px;height:5px"><div class="pb" style="width:${g.progress}%;background:${u.c}"></div></div><span style="font-size:10px;color:${u.l};width:32px;text-align:right">${g.progress}%</span></div>`).join('');
+  return `<div class="pt">Performance</div><div class="ps">Reviews &amp; goals</div>
+  <div class="card"><div class="ch"><h3>${r.period} Review</h3><span class="bdg bgn">${r.overallRating}/5</span></div><div class="cb">
+    <div class="g2">
+      <div>${ir('Code Quality',stars(r.codeQuality))}${ir('Teamwork',stars(r.teamwork))}${ir('On Time',stars(r.onTime))}</div>
+      <div>${ir('Communication',stars(r.communication))}${ir('Initiative',stars(r.initiative))}${ir('Overall','<strong>'+r.overallRating+'/5</strong>')}</div>
+    </div>
+    <div style="margin-top:12px"><div class="ilbl">Goals</div>${goalRows}</div>
+    ${r.feedback?`<div class="al al-g" style="margin-top:12px"><i class="fas fa-comment"></i> ${r.feedback}</div>`:''}
+  </div></div>`;
+}
+
+// ── PAYROLL (HR) ──────────────────────────────────────────────
+async function pPayroll(u) {
+  const data = await api('GET', '/payroll/all');
+  const records = data.records||[];
+  const total = records.reduce((s,p)=>s+(p.netPay||0),0);
+  const rows = records.slice(0,20).map(p=>`<tr><td>${p.userId?.name||'—'}</td><td>${p.userId?.eid||'—'}</td><td>${p.monthLabel||p.month}</td><td>₹${fmt(p.netPay)}</td><td>₹${fmt(p.gross)}</td><td><span class="bdg bgn">Paid</span></td></tr>`).join('');
+  const curM = curMonth();
+  return `<div class="pt">Payroll</div><div class="ps">Manage employee salaries</div>
+  <div class="sg">${sc(1,'fa-coins','\u20B9'+fmtL(total),'Total Payout','All time',u.c,u.l,u.b)}${sc(2,'fa-users',records.length,'Records','All payslips','#8b5cf6','#c4b5fd','rgba(139,92,246,.15)')}</div>
+  <div class="card"><div class="ch"><h3>Run Payroll</h3></div><div class="cb" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <input class="inp" id="pr-month" type="month" value="${curM}" style="width:180px"/>
+    <button class="btn btn-p" onclick="runPayroll()"><i class="fas fa-play"></i> Generate Payroll</button>
+  </div></div>
+  <div class="card"><div class="ch"><h3>All Payroll Records</h3></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Name</th><th>EID</th><th>Month</th><th>Net Pay</th><th>Gross</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </div>`;
+}
+
+async function runPayroll() {
+  const month = document.getElementById('pr-month')?.value;
+  if (!month) return toast('⚠️ Select a month.');
+  try {
+    const data = await api('POST', '/payroll/run', { month });
+    toast('✅ '+data.message);
+    go('payroll');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── EMPLOYEES ─────────────────────────────────────────────────
+async function pEmps(u) {
+  const data = await api('GET', '/users');
+  const users = data.users||[];
+  const rows = users.map(e=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:8px">${avatarHtml(e,28)}<div><div style="font-size:12px;font-weight:600">${e.name}</div><div style="font-size:10px;color:var(--mu)">${e.eid||''}</div></div></div></td>
+    <td>${e.dept||'—'}</td><td>${e.title||'—'}</td>
+    <td><span class="bdg bgn">Active</span></td>
+    <td><span class="bdg ${e.role==='manager'?'bgp':e.role==='hr'?'bgpk':'bgb'}">${RL[e.role]||e.role}</span></td>
+  </tr>`).join('');
+  return `<div class="pt">Employees</div><div class="ps">${users.length} active employees</div>
+  <div class="card"><div class="ch"><h3>All Employees</h3></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Name</th><th>Dept</th><th>Title</th><th>Status</th><th>Role</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </div>`;
+}
+
+// ── APPROVALS ─────────────────────────────────────────────────
+async function pAppr(u) {
+  const data = await api('GET', '/leaves/pending');
+  const leaves = data.leaves||[];
+  if (!leaves.length) return `<div class="pt">Approvals</div><div class="ps">Pending requests</div><div class="al al-g"><i class="fas fa-check-double"></i> No pending leave requests.</div>`;
+  const cards = leaves.map(l=>`<div class="appr">
+    ${avatarHtml(l.userId,32)}
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:600">${l.userId?.name||'—'}</div>
+      <div style="font-size:10px;color:var(--mu)">${l.type} · ${l.from} → ${l.to} · ${l.days} day(s)</div>
+      <div style="font-size:10px;color:var(--mu);margin-top:2px">${l.reason}</div>
+    </div>
+    <button class="btn btn-g btn-sm" onclick="actLeave('${l._id}','approve')"><i class="fas fa-check"></i></button>
+    <button class="btn btn-r btn-sm" onclick="actLeave('${l._id}','reject')"><i class="fas fa-times"></i></button>
+  </div>`).join('');
+  return `<div class="pt">Approvals</div><div class="ps">${leaves.length} pending</div><div class="card"><div class="ch"><h3>Leave Requests</h3></div><div class="cb">${cards}</div></div>`;
+}
+
+async function actLeave(id, action) {
+  try {
+    await api('PUT', `/leaves/${id}/${action}`, { remark: action==='approve'?'Approved':'Rejected' });
+    toast(action==='approve' ? '✅ Leave approved.' : '✅ Leave rejected.');
+    updateNotifDot();
+    go('appr');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── REPORTS ───────────────────────────────────────────────────
+async function pRpts(u) {
+  const usersRes = await api('GET', '/users');
+  const users = usersRes.users||[];
+  const byDept = {};
+  users.forEach(x=>{ byDept[x.dept]=(byDept[x.dept]||0)+1; });
+  const deptBars = Object.entries(byDept).sort((a,b)=>b[1]-a[1]).map(([d,n])=>rp(d+' ('+n+')',Math.round(n/users.length*100),u.c,u.l)).join('');
+  return `<div class="pt">Analytics &amp; Reports</div><div class="ps">Company performance overview</div>
+  <div class="g2">
+    <div class="card"><div class="ch"><h3>Headcount by Department</h3></div><div class="cb">${deptBars}<div style="font-size:11px;color:var(--mu);margin-top:10px">Total: ${users.length} active employees</div></div></div>
+    <div class="card"><div class="ch"><h3>Summary</h3></div><div class="cb">${ir('Total Employees',users.length)}${ir('Departments',Object.keys(byDept).length)}${ir('Managers',users.filter(x=>x.role==='manager').length)}${ir('HR Staff',users.filter(x=>x.role==='hr').length)}</div></div>
+  </div>`;
+}
+
+// ── BOARD REPORT ──────────────────────────────────────────────
+async function pBoard(u) {
+  const [usersRes, payRes, perfRes] = await Promise.all([
+    api('GET', '/users'),
+    api('GET', '/payroll/all'),
+    api('GET', '/performance/all'),
+  ]);
+  const users  = usersRes.users||[];
+  const pays   = payRes.records||[];
+  const perfs  = perfRes.records||[];
+  const totalGross = pays.reduce((s,p)=>s+(p.gross||0),0);
+  const avgRating  = perfs.length ? parseFloat((perfs.reduce((s,p)=>s+(p.overallRating||0),0)/perfs.length).toFixed(1)) : 0;
+  return `<div class="pt">Board Report</div><div class="ps">Executive HR Summary</div>
+  <div class="sg">${sc(1,'fa-users',users.length,'Headcount','Active employees',u.c,u.l,u.b)}${sc(2,'fa-star',avgRating||'—','Performance','Avg rating','#f59e0b','#fbbf24','rgba(245,158,11,.15)')}${sc(3,'fa-coins','\u20B9'+fmtL(totalGross),'Total Payroll','All time','#ec4899','#f9a8d4','rgba(236,72,153,.15)')}</div>
+  <div class="card"><div class="ch"><h3>Key Highlights</h3></div><div class="cb">
+    <div class="al al-g"><i class="fas fa-users"></i> ${users.length} active employees across ${[...new Set(users.map(x=>x.dept))].length} departments</div>
+    <div class="al al-g"><i class="fas fa-star"></i> Avg performance rating: ${avgRating}/5</div>
+    <div class="al al-w"><i class="fas fa-triangle-exclamation"></i> Review attrition trends quarterly</div>
+  </div></div>`;
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────
+async function pSettings(u) {
+  return `<div class="pt">Settings</div><div class="ps">Manage your preferences</div>
+  <div class="card"><div class="ch"><h3>Account</h3></div><div class="cb">
+    <div class="ig"><div class="ilbl">Display Name</div><input class="inp" id="set-name" value="${u.name||''}"/></div>
+    <button class="btn btn-p" onclick="saveSettings()"><i class="fas fa-save"></i> Save</button>
+  </div></div>
+  <div class="card"><div class="ch"><h3>About</h3></div><div class="cb">
+    ${ir('Version','EMS v5.0 — Fullstack')}${ir('Role',RL[u.role]||u.role)}${ir('Employee ID',u.eid||'—')}
+    <div class="al al-w" style="margin-top:12px"><i class="fas fa-database"></i> Data is now stored in MongoDB — changes sync across devices and users.</div>
+  </div></div>`;
+}
+
+async function saveSettings() {
+  const name = document.getElementById('set-name')?.value.trim();
+  if (!name) return toast('⚠️ Name cannot be empty.');
+  try {
+    const data = await api('PUT', '/users/'+U._id, { name });
+    U = { ...U, ...data.user };
+    document.getElementById('sb-nm').textContent = U.name;
+    toast('✅ Settings saved!');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── AUDIT ─────────────────────────────────────────────────────
+async function pAudit(u) {
+  const data = await api('GET', '/audit');
+  const logs = data.logs||[];
+  const rows = logs.map(l=>`<tr><td style="font-family:var(--mo);font-size:10px">${new Date(l.createdAt).toLocaleString()}</td><td>${l.userId?.name||'System'}</td><td>${l.action}</td><td><span class="bdg ${l.result==='OK'?'bgn':'bgr'}">${l.result}</span></td><td style="font-family:var(--mo);font-size:10px">${l.ip||'—'}</td></tr>`).join('');
+  return `<div class="pt">Audit Logs</div><div class="ps">System activity</div>
+  <div class="card"><div class="tw"><table class="tbl"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Result</th><th>IP</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+// ── USERS (Admin) ─────────────────────────────────────────────
+async function pUsers(u) {
+  const data = await api('GET', '/users');
+  const users = data.users||[];
+  const rows = users.map(e=>`<tr>
+    <td>${e.name}</td><td>${e.eid||'—'}</td><td>${e.email}</td>
+    <td><span class="bdg ${e.role==='admin'?'bgy':e.role==='hr'?'bgpk':e.role==='manager'?'bgp':e.role==='ceo'?'bgt':'bgb'}">${RL[e.role]||e.role}</span></td>
+    <td><span class="bdg bgn">Active</span></td>
+    <td><button class="btn btn-r btn-sm" onclick="deactivateUser('${e._id}','${e.name}')"><i class="fas fa-ban"></i></button></td>
+  </tr>`).join('');
+  return `<div class="pt">Users &amp; Roles</div><div class="ps">Manage system users</div>
+  <div class="card"><div class="tw"><table class="tbl"><thead><tr><th>Name</th><th>EID</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+async function deactivateUser(id, name) {
+  if (!confirm('Deactivate '+name+'?')) return;
+  try { await api('DELETE', '/users/'+id); toast('✅ User deactivated.'); go('users'); } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── ONBOARDING ────────────────────────────────────────────────
+async function pOnboard(u) {
+  return `<div class="pt">Onboarding</div><div class="ps">Create new employee accounts</div>
+  <div class="card"><div class="ch"><h3>Add New Employee</h3></div><div class="cb">
+    <div class="fg2">
+      <div class="ig"><div class="ilbl">First Name</div><input class="inp" id="ob-fn" placeholder="First"/></div>
+      <div class="ig"><div class="ilbl">Last Name</div><input class="inp" id="ob-ln" placeholder="Last"/></div>
+    </div>
+    <div class="ig"><div class="ilbl">Work Email</div><input class="inp" id="ob-em" type="email" placeholder="name@company.com"/></div>
+    <div class="fg2">
+      <div class="ig"><div class="ilbl">Department</div><select class="inp" id="ob-dp"><option value="">Select</option><option>Engineering</option><option>Marketing</option><option>Sales</option><option>Finance</option><option>HR</option><option>Operations</option><option>IT &amp; Admin</option><option>Executive</option></select></div>
+      <div class="ig"><div class="ilbl">Title</div><input class="inp" id="ob-ti" placeholder="e.g. Developer"/></div>
+    </div>
+    <div class="fg2">
+      <div class="ig"><div class="ilbl">Salary (₹)</div><input class="inp" id="ob-sl" type="number" placeholder="50000"/></div>
+      <div class="ig"><div class="ilbl">Role</div><select class="inp" id="ob-rl"><option value="employee">Employee</option><option value="manager">Manager</option><option value="hr">HR</option><option value="admin">Admin</option></select></div>
+    </div>
+    <div class="ig"><div class="ilbl">Temporary Password</div><input class="inp" id="ob-pw" type="password" placeholder="Min 6 chars"/></div>
+    <button class="btn btn-p" onclick="createEmployee()"><i class="fas fa-user-plus"></i> Create Employee</button>
+  </div></div>`;
+}
+
+async function createEmployee() {
+  const fn = document.getElementById('ob-fn')?.value.trim();
+  const ln = document.getElementById('ob-ln')?.value.trim();
+  const em = document.getElementById('ob-em')?.value.trim();
+  const dp = document.getElementById('ob-dp')?.value;
+  const ti = document.getElementById('ob-ti')?.value.trim();
+  const sl = document.getElementById('ob-sl')?.value;
+  const rl = document.getElementById('ob-rl')?.value;
+  const pw = document.getElementById('ob-pw')?.value;
+  if (!fn||!ln||!em||!dp||!pw) return toast('⚠️ Fill all required fields.');
+  try {
+    await api('POST', '/users', { name:`${fn} ${ln}`, email:em, password:pw, dept:dp, title:ti, salary:Number(sl)||50000, role:rl||'employee' });
+    toast('✅ Employee created successfully!');
+    go('onboard');
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── SHARED COMPONENTS ─────────────────────────────────────────
+function sc(n,i,v,l,s,c,li,b){ return `<div class="sc"><div class="sc-i" style="background:${b};color:${li}"><i class="fas ${i}"></i></div><div class="sc-v">${v}</div><div class="sc-l">${l}</div><div class="sc-s">${s}</div></div>`; }
+function rp(l,p,c,li){ return `<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>${l}</span><span style="color:${li}">${p}%</span></div><div class="prog" style="height:5px"><div class="pb" style="width:${p}%;background:${c}"></div></div></div>`; }
+function ir(l,v){ return `<div class="ir"><span>${l}</span><span>${v}</span></div>`; }
+function pr(l,v,c){ return `<div class="prow"><span>${l}</span><span style="color:${c};font-weight:600">${v}</span></div>`; }
+function pGen(p,u){ const nm={goals:'Goals',grievance:'Grievance',policy:'Leave Policy',backup:'Backup',security:'Security',departments:'Departments',gen:'Module'}[p]||p; return `<div class="pt">${nm}</div><div class="ps">Manage ${nm.toLowerCase()}</div><div class="card"><div class="cb" style="text-align:center;padding:40px"><div style="font-size:46px;margin-bottom:12px">🚧</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">${nm}</div><div style="font-size:12px;color:var(--mu)">Coming soon</div></div></div>`; }
+
+// ── TOAST ─────────────────────────────────────────────────────
+var toastT;
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),3000); }
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('load', async function() {
+  setTimeout(async () => {
+    const l = document.getElementById('loading');
+    l.style.opacity = '0';
+    setTimeout(async () => {
+      l.style.display = 'none';
+      // Try to restore session from token
+      if (authToken) {
+        try {
+          const data = await api('GET', '/auth/me');
+          if (data.user && data.user.isActive !== false) {
+            U = data.user;
+            launch();
+            return;
+          }
+        } catch {
+          authToken = null;
+          localStorage.removeItem('ems_token');
+        }
+      }
+      // Show login
+      document.getElementById('auth').classList.add('on');
+    }, 400);
+  }, 600);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const auth = document.getElementById('auth');
+  if (!auth.classList.contains('on')) return;
+  const sw = document.getElementById('sw');
+  if (sw && sw.style.display !== 'none') doSignup(); else doLogin();
+});
+
+var _tx = 0;
+document.addEventListener('touchstart', e=>{ _tx=e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e=>{
+  const dx = e.changedTouches[0].clientX - _tx;
+  const sb = document.getElementById('sb');
+  if (!sb) return;
+  if (sb.classList.contains('open') && dx < -50) closeSB();
+  else if (!sb.classList.contains('open') && dx > 60 && _tx < 35) openSB();
+}, {passive:true});
+</script>
+</body>
+</html>
