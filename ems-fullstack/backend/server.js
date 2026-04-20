@@ -1,21 +1,35 @@
 require('dotenv').config();
-const express   = require('express');
-const cors      = require('cors');
+const express = require('express');
+const cors = require('cors');
 const connectDB = require('./config/db');
 
+// connect to mongo first
 connectDB();
+
+// need to register Performance model early because it also registers AuditLog
+// ran into issues before where audit routes broke without this
 require('./models/Performance');
 
 const app = express();
 
-app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE','OPTIONS'], allowedHeaders: ['Content-Type','Authorization'] }));
-app.use(express.json({ limit: '5mb' }));
+// cors - keeping it open for now, will lock down origins before prod
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json({ limit: '5mb' })); // 5mb for profile photos (base64)
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', ts: new Date() }));
+// quick health check endpoint - useful for render.com free tier ping
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', ts: new Date() });
+});
 
-// Load routes with error catching
-const routeFiles = [
+// loading routes this way so a single broken route doesnt crash the whole server
+// had that problem in dev, took me a while to debug
+const routes = [
   { path: '/api/auth',        file: './routes/auth' },
   { path: '/api/users',       file: './routes/users' },
   { path: '/api/attendance',  file: './routes/attendance' },
@@ -25,21 +39,26 @@ const routeFiles = [
   { path: '/api/audit',       file: './routes/audit' },
 ];
 
-routeFiles.forEach(({ path, file }) => {
+routes.forEach(({ path, file }) => {
   try {
     app.use(path, require(file));
-    console.log('✅ Route loaded:', path);
-  } catch(e) {
-    console.error('❌ Failed to load route:', path, e.message);
+    console.log('route ok:', path);
+  } catch (err) {
+    console.error('route failed:', path, '-', err.message);
   }
 });
 
+// global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ success: false, message: err.message || 'Server error' });
+  res.status(500).json({ success: false, message: err.message || 'something went wrong' });
 });
 
-app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
+// 404 fallback
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'route not found' });
+});
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 EMS API running on port ${PORT}`));
+// using 5000 because 3000 was conflicting with my react project locally
+app.listen(PORT, () => console.log(`server running on port ${PORT}`));
